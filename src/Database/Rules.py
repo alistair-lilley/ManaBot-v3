@@ -30,8 +30,8 @@ class Rules:
         rulenum = re.sub(r'[\W\s]', '', rulenum).lower()
         return ''.join([ch for ch in rulenum if ch not in string.punctuation])
 
-    def retrieve_rule(self, rulekw):
-        return self.ruletree.search_for_rule(self._simplify(rulekw))
+    def retrieve_rule(self, ruleorkw):
+        return self.ruletree.search_for_rule(self._simplify(ruleorkw))
 
 
 class RTree:
@@ -49,6 +49,18 @@ class RTree:
         self.value = rule
         self.children = dict()
 
+    def _get_rule(self):
+        return self.value + self._get_next_level()
+
+    def _get_next_level(self):
+        children_values = ""
+        for child in self.children:
+            if not self.children[child].value:
+                children_values += self.children[child].get_next_level()
+            else:
+                children_values += '\n' + self.children[child].value
+        return children_values
+
     def insert_rule(self, rulenum, rule):
         if not rulenum:
             self.value = rule
@@ -64,18 +76,6 @@ class RTree:
     def search_for_rule(self, rulenum):
         if rulenum[0] in self.children:
             if len(rulenum) == 1:
-                return self.children[rulenum[0]].get_rule()
+                return self.children[rulenum[0]]._get_rule()
             return self.children[rulenum[0]].search_for_rule(rulenum[1:])
         return "Rule not found"
-
-    def get_rule(self):
-        return self.value + self.get_next_level()
-
-    def get_next_level(self):
-        children_values = ""
-        for child in self.children:
-            if not self.children[child].value:
-                children_values += self.children[child].get_next_level()
-            else:
-                children_values += '\n' + self.children[child].value
-        return children_values

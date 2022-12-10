@@ -5,6 +5,11 @@ from src.Singleton import Singleton
 NAME = 'name'
 IMAGE_PATH = 'cardimages'
 JSON_PATH = 'json_cards'
+JSON_URL = "https://mtgjson.com/api/v5/AllPrintings.json"
+CARD_IMAGE_URL = "https://gatherer.wizards.com/" \
+                "Handlers/Image.ashx?name=[CARD]type=card"
+RULES_URL = "https://media.wizards.com/" \
+                "[YR]/downloads/MagicCompRules%20[YR][MO][DAY].txt"
 DAY = 60*60*24
 
 class DBProxy(Singleton):
@@ -32,16 +37,17 @@ class DBProxy(Singleton):
         self.json_url = json_url
         self.database_dir = database_dir
         self.local_update_hash = local_update_hash
-        self.remoteupdate_hash = self.json_url + '.sha256'
+        self.remote_update_hash = self.json_url + '.sha256'
         self.cards_url = cards_url
         self.url_repl_str = url_repl_str
-        self.databaseIdType = database_id_type
+        self.database_ID_type = database_id_type
         self.rules_url = rules_url
 
     async def _should_update(self):
         try:
             with open(self.local_update_hash) as update_hash:
-                online_hash = await self.http_session.get(self.remoteupdate_hash)
+                online_hash = \
+                            await self.http_session.get(self.remote_update_hash)
                 if update_hash.read() == await online_hash.text():
                     print("Hash found -- database up to date.")
                     return False
@@ -49,12 +55,12 @@ class DBProxy(Singleton):
                     print("New hash found -- updating database.")
                     return True
         except:
-            print(f"Remote update hash not reached: {self.remoteupdate_hash}")
+            print(f"Remote update hash not reached: {self.remote_update_hash}")
             return False
 
     async def _update_hash(self):
         with open(self.local_update_hash, 'w') as update_hash:
-            online_hash = await self.http_session.get(self.remoteupdate_hash)
+            online_hash = await self.http_session.get(self.remote_update_hash)
             update_hash.write(await online_hash.text())
 
     async def _fetch_database(self, database_url):
@@ -116,7 +122,7 @@ class DBProxy(Singleton):
             if self._simplify(card[NAME]) in existing_cards:
                 continue
             await self._download_one_card_image(card[NAME], 
-                            card['identifiers'][self.databaseIdType])
+                            card['identifiers'][self.database_ID_type])
         print("Complete")
 
     def _card_download_meter(self, cardcount, jsoncardlen):
