@@ -22,11 +22,13 @@ LEGALITIES = "legalities"
 
 class Card:
     '''
-        A Card is a singular object that contains a selected section of the information
-        pertaining to that card, as well as its image as a PIL object. Two cards can
-        be compared to each other and evaluated as <, >, or == based on their names.
+        A Card is a singular object that contains a selected section of the
+        information pertaining to that card, as well as its image as a PIL 
+        object. Two cards can be compared to each other and evaluated as <, >,
+        or == based on their names.
     '''
-    # cardInfoSections is passed list of Section tuples for extracting from cardJson
+    # cardInfoSections is passed list of Section tuples for extracting from 
+    # cardJson
     def __init__(self, cardJsonPath, cardImageDir, cardInfoSections):
         with open(cardJsonPath) as readCard:
             cardJson = json.load(readCard)
@@ -70,20 +72,27 @@ class Card:
     def _simplify(self, string):
         return re.sub(r'[\W\s]', '', string).lower()
 
-    def get_name(self):
+    @property
+    def name(self):
         return self.cardinfo[NAME]
 
-    def get_short_name(self):
+    @property
+    def short_name(self):
         return self._simplify(self.cardinfo[NAME])
 
-    def get_name_simple(self):
-        return self._simplify(self.getName())
+    @property
+    def simple_name(self):
+        return self._simplify(self.name)
 
-    def get_legalities(self):
+    @property
+    def legalities(self):
         return self.cardinfo[LEGALITIES]
 
+    # skipping this: we can just index `legalities`
+    '''@property
     def get_one_legality(self, legality):
-        return self.cardinfo[LEGALITIES][legality]
+        return self.cardinfo[LEGALITIES][legality]'''
 
-    def return_all_card_info(self):
+    @property
+    def all_info(self):
         return self.cardinfo, self.image

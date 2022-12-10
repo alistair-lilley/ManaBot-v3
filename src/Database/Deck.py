@@ -1,7 +1,7 @@
 import re
 import xml.etree.ElementTree as ET
 from collections import namedtuple
-from src.Database.Card import Card
+from Card import Card
 
 ZIP = "zip"
 COD = "cod"
@@ -32,16 +32,19 @@ class Deck:
         self.savedir = dataDir + SAVEPATH
         self.infoSections = infoSections
         formats = open('testdata/formats.txt')
-        self.default_legality_formats = {line.strip().split(',')[0] : line.strip().split(',')[1]
+        self.default_legality_formats = {line.strip().split(',')[0] : 
+                                         line.strip().split(',')[1]
                                          for line in formats}
         formats.close()
-        self.comments, self.mainboard, self.sideboard = self._parseDeck(deckFile, fileType)
+        self.comments, self.mainboard, self.sideboard \
+            = self._parseDeck(deckFile, fileType)
 
-    def _makeCard(self, card):
+    def _make_card(self, card):
         card = self._simplify(card)
-        return Card(self.jsonpaths + card + '.json', self.imagepaths + card + '.jpg', self.infoSections)
+        return Card(self.jsonpaths + card + '.json', 
+                    self.imagepaths + card + '.jpg', self.infoSections)
 
-    def _parseDeck(self, deckFile, fileType):
+    def _parse_deck(self, deckFile, fileType):
         if fileType == RAW:
             cardList = self._fromRaw(deckFile)
             comments, mainboard, sideboard = cardList
@@ -50,8 +53,9 @@ class Deck:
             comments, mainboard, sideboard = cardList
         return comments, mainboard, sideboard
 
-    def _fromFile(self, deckFile, fileType):
-        with open(self.datadir + "testdecks/" + deckFile + '.' + fileType) as read_deck_file:
+    def _from_file(self, deckFile, fileType):
+        with open(self.datadir + "testdecks/" + deckFile + '.' + fileType) \
+                  as read_deck_file:
             deckData = read_deck_file.read()
         if fileType == COD:
             return self._fromcod(deckData)
@@ -77,16 +81,18 @@ class Deck:
                 sideboard = self._getBoard_cod(zone)
         return comments, mainboard, sideboard
 
-    def _getBoard_cod(self, zone):
+    def _get_board_cod(self, zone):
         board = {}
         for card in zone:
             if zone.attrib[NAME] == 'main':
-                board[card.attrib[NAME]] = CardPair(card.attrib[NUMBER], self._makeCard(card.attrib[NAME]))
+                board[card.attrib[NAME]] = CardPair(card.attrib[NUMBER], 
+                self._makeCard(card.attrib[NAME]))
         return board
 
-    # This is both for txt and mwDeck, because the only difference is the number of times you split the line
-    # mwDeck is in the format `1 [ZEN] Marsh Flats`, so you want to skip the setID in the middle
-    # txt doesn't have the setID, and that's the only difference
+    # This is both for txt and mwDeck, because the only difference is the number
+    # of times you split the line mwDeck is in the format `1 [ZEN] Marsh Flats`,
+    # so you want to skip the setID in the middle txt doesn't have the setID,
+    # and that's the only difference
     def _from_mwDeck_txt(self, deckFile, ext):
         if ext == MWDECK:
             splitnum = 2
@@ -102,7 +108,8 @@ class Deck:
             if line[0] == '/':
                 comments.append(line)
             elif line[0] == 'S':
-                # Cuts out the SB: and strips it so it's the same format as a non-sideboard line
+                # Cuts out the SB: and strips it so it's the same format as a
+                # non-sideboard line
                 line = line.split(' ', 1)[1].strip()
                 num, card = self._pull_num_card(line, splitnum)
                 sideboard[card] = CardPair(num, self._makeCard(card))
@@ -111,28 +118,25 @@ class Deck:
                 mainboard[card] = CardPair(num, self._makeCard(card))
         return comments, mainboard, sideboard
 
-    def _fromRaw(self, deckRaw):
+    def _from_raw(self, deckRaw):
         return self._from_mwDeck_txt(deckRaw, TXT)
 
-    def _toText(self):
+    def _to_text(self):
         deckText = ''
         if self.comments:
             comments = [comment for comment in self.comments]
             deckText += '\n'.join(comments) + '\n'
-        mainboard = [self.mainboard[card].num + ' ' + self.mainboard[card].cardobj.getName() for card in self.mainboard]
+        mainboard = [self.mainboard[card].num + ' ' \
+            + self.mainboard[card].cardobj.getName() for card in self.mainboard]
         deckText += '\n'.join(mainboard)
         if self.sideboard:
             sideboard = ['SB: ' + self.sideboard[card].num + ' '
-                         + self.sideboard[card].cardobj.getName() for card in self.sideboard]
+                         + self.sideboard[card].cardobj.getName()
+                         for card in self.sideboard]
             deckText += '\n' + '\n'.join(sideboard)
         return deckText
-        
-    def toTxtFile(self):
-        with open(self.savedir + self.name, 'w') as saveDeckFile:
-            decktext = self._toText()
-            saveDeckFile.write(decktext)
 
-    def _toBanText(self, bannedsets, restrictedsets, legalsets, set_legalities):
+    def _to_ban_txt(self, bannedsets, restrictedsets, set_legalities): #, legalsets
         out = "**Banned cards**"
         for banset in bannedsets:
             set_proper_name = set_legalities[banset]
@@ -145,11 +149,12 @@ class Deck:
             out += f'\n__{set_proper_name}__'
             for card in restrictedsets[restset]:
                 out += '\n' + card
-        '''out += "\n**Legal cards**"
-        for legset in legalsets:
-            out += f'\n__{set_legalities[legset]}__'
-            for card in legalsets[legset]:
-                out += '\n' + card'''
+        # This is an optional section, may reinstate later
+        #out += "\n**Legal cards**"
+        #for legset in legalsets:
+        #    out += f'\n__{set_legalities[legset]}__'
+        #    for card in legalsets[legset]:
+        #        out += '\n' + card
         return out
 
     def _get_bans_from_legalities(self, set_legalities):
@@ -159,22 +164,22 @@ class Deck:
         allboards = {**self.mainboard, **self.sideboard}
         for card in allboards:
             cardobj = allboards[card].cardobj
-            legalities = [legalset for legalset in cardobj.getLegalities() if legalset in list(set_legalities.keys())]
+            legalities = [legalset for legalset in cardobj.getLegalities() if
+                          legalset in list(set_legalities.keys())]
             for legality in legalities:
                 format_legality = self._simplify(cardobj.getLegality(legality))
                 if format_legality == BANNED:
-                    bannedCards[legality] = bannedCards.get(legality, []) + [cardobj.getName()]
+                    bannedCards[legality] = bannedCards.get(legality, []) \
+                        + [cardobj.getName()]
                 elif format_legality == RESTRICTED:
-                    restrictedCards[legality] = restrictedCards.get(legality, []) + [cardobj.getName()]
+                    restrictedCards[legality] \
+                        = restrictedCards.get(legality, []) \
+                            + [cardobj.getName()]
                 elif format_legality == LEGAL:
-                    legal_cards[legality] = legal_cards.get(legality, []) + [cardobj.getName()]
-        bans = self._toBanText(bannedCards, restrictedCards, legal_cards, set_legalities)
-        return bans
-
-    def get_bans(self, legalities=None):
-        if not legalities:
-            legalities = self.default_legality_formats
-        return self._get_bans_from_legalities(legalities)
+                    legal_cards[legality] = legal_cards.get(legality, []) \
+                        + [cardobj.getName()]
+        bans = self._toBanText(bannedCards, restrictedCards, legal_cards,
+                               set_legalities)
 
     def _simplify(self, string):
         return re.sub(r'[\W\s]', '', string).lower()
@@ -185,3 +190,14 @@ class Deck:
         num = card_line_split[0]
         card = card_line_split[-1]
         return num, card
+        return bans
+
+    def get_bans(self, legalities=None):
+        if not legalities:
+            legalities = self.default_legality_formats
+        return self._get_bans_from_legalities(legalities)
+        
+    def to_txt_file(self):
+        with open(self.savedir + self.name, 'w') as saveDeckFile:
+            decktext = self._toText()
+            saveDeckFile.write(decktext)
