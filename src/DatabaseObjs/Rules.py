@@ -1,4 +1,5 @@
 import re, string
+from Singleton import Singleton
 
 class Rules:
     

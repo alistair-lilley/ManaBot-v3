@@ -1,6 +1,6 @@
 """ Singleton
 
-    We want all the classes in this program to only have one instance, so we'll 
+    We want most classes in this program to only have one instance, so we'll 
     force all of them to be singletons
 """
 

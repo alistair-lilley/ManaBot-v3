@@ -25,8 +25,8 @@ class Deck:
     '''
         A deck is a collection of cards (implemented as Card objects).
     '''
-    def __init__(self, deck_file, file_type, data_dir, info_sections, text_dir):
-        self.textdir = text_dir
+    def __init__(self, deck_file, file_type, data_dir, info_sections): #, text_dir):
+        #self.textdir = text_dir
         self.datadir = data_dir
         self.name = deck_file
         self.jsonpaths = data_dir + JSONPATH
@@ -63,8 +63,6 @@ class Deck:
             return self._fromcod(deck_data)
         elif file_type in [MWDECK, TXT] :
             return self._from_mw_deck_txt(deck_data, file_type)
-        elif file_type == JSON:
-            return self._from_json(deck_data)
         else:
             return deck_data
 
@@ -111,15 +109,15 @@ class Deck:
                 continue
             if line[0] == '/':
                 comments.append(line)
+            elif line[0].isdigit:
+                num, card = self._pull_num_card(line, splitnum)
+                mainboard[card] = CardPair(num, self._make_card(card))
             elif line[0] == 'S':
                 # Cuts out the SB: and strips it so it's the same format as a
                 # non-sideboard line
                 line = line.split(' ', 1)[1].strip()
                 num, card = self._pull_num_card(line, splitnum)
                 sideboard[card] = CardPair(num, self._make_card(card))
-            elif line[0].isdigit:
-                num, card = self._pull_num_card(line, splitnum)
-                mainboard[card] = CardPair(num, self._make_card(card))
         return comments, mainboard, sideboard
 
     def _from_raw(self, deck_raw):
@@ -139,9 +137,6 @@ class Deck:
                          for card in self.sideboard]
             deck_text += '\n' + '\n'.join(sideboard)
         return deck_text
-
-    def _from_json(self, strdata):
-        datadict = json.loads(strdata)
 
     def _to_ban_txt(self, bannedsets, restrictedsets, set_legalities): #, legalsets
         out = "**Banned cards**"
@@ -195,7 +190,7 @@ class Deck:
     def _pull_num_card(self, line, numsplit):
         card_line_split = line.split(' ', numsplit)
         num = card_line_split[0]
-        card = card_line_split[-1]
+        card = self._simplify(card_line_split[-1])
         return num, card
         #return bans
 
@@ -208,3 +203,15 @@ class Deck:
         with open(self.savedir + self.name, 'w') as save_deck_file:
             decktext = self._to_text()
             save_deck_file.write(decktext)
+            
+    @property
+    def mainboard(self):
+        return self.mainboard
+    
+    @property
+    def sideboard(self):
+        return self.sideboard
+    
+    @property
+    def comments(self):
+        return self.comments

@@ -1,6 +1,6 @@
-import aiohttp, re, json, filetype, urllib, os, asyncio
+import aiohttp, re, json, filetype, urllib, os, asyncio, datetime
 from PIL import Image
-from src.Singleton import Singleton
+from Singleton import Singleton
 
 NAME = 'name'
 IMAGE_PATH = 'cardimages'
@@ -20,14 +20,16 @@ class DBProxy(Singleton):
     '''
     def __init__(self, json_url, database_dir, local_update_hash, 
                 cards_url, url_repl_str, database_id_type, rules_url):
-        while True:
+        super(Singleton, self).__init__()
+        connected = False
+        while not connected:
             print("Connecting to http session")
             try:
                 self.http_session = aiohttp.ClientSession()
                 print("http session online")
-                break
+                connected = True
             except: 
-                print("`http session failed to connect... Reconnecting in",
+                print("http session failed to connect... Reconnecting in",
                       end="")
                 countdown = 10
                 while countdown:
@@ -73,8 +75,8 @@ class DBProxy(Singleton):
     def _split_up_json_cards(self, json_file):
         json_cards_split_up = []
         json_card_sets = json_file['data']
-        for cardSet in json_card_sets:
-            card_set_cards = json_card_sets[cardSet]['cards']
+        for card_set in json_card_sets:
+            card_set_cards = json_card_sets[card_set]['cards']
             for card in card_set_cards:
                 json_cards_split_up.append(card)
         return json_cards_split_up
@@ -88,7 +90,7 @@ class DBProxy(Singleton):
                       f'{self._simplify(card[NAME])}.json', 'w') as json_card_f:
                 json.dump(card, json_card_f)
 
-    def _compress_card_image(self, cardpath, ext):
+    def _compress_save_card_image(self, cardpath, ext):
         with Image.open(cardpath + "." + ext) as cardfile:
             compressed_card = cardfile.resize((360,500))
             compressed_card.save(cardpath + ".jpg")
@@ -103,7 +105,7 @@ class DBProxy(Singleton):
             ext = filetype.guess(card_data).extension
             with open(cardpath + '.' + ext, 'wb') as card_write:
                 card_write.write(card_data)
-            self._compress_card_image(cardpath, ext)
+            self._compress_save_card_image(cardpath, ext)
         except:
             print("Failed to download card -- wizards down?")
 
@@ -134,9 +136,36 @@ class DBProxy(Singleton):
                   + ' (' + str(round(percent * 100, 1)) + '%)'
         print(toprint, end="\r")
 
+    def _decrement_date(year, month, day):
+        if day == 0:
+            day = 31
+            month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+        return year, month, day
 
-    async def _update_rules(self, rules_url):
-        rules_online = await self.http_session.get(rules_url)
+    def _complete_url(rules_url, year, month, day):
+        rules_url = re.sub('[YR]', str(year), rules_url)
+        rules_url = re.sub('[MO]', str(month), rules_url)
+        rules_url = re.sub('[DAY]', str(day), rules_url)
+        return rules_url
+
+    def _find_rules_url(self, rules_url):
+        # Datetime now stringified will look like `'2022-12-11 10:51:47.167875'`
+        # so we just gotta get the `2022-12-11` and split it on `-`
+        year, month, day = [int(piece) for piece in 
+                            datetime.datetime.now().split()[0].split('-')]
+        url_completed = self._complete_url(rules_url, year, month, day)
+        # Basically we work backwards to find the latest update
+        while not os.system("ping", url_completed):
+            year, month, day = self._decrement_date(year, month, day)
+            url_completed = self._complete_url(rules_url, year, month, day)
+        return url_completed
+
+    async def _update_rules(self):
+        current_rules_url = self._find_rules_url(self.rules_url)
+        rules_online = await self.http_session.get(current_rules_url)
         rules_text = await rules_online.text()
         with open(self.database_dir + "/rules", 'w') as rulesfile:
             rulesfile.write(rules_text)
@@ -155,15 +184,15 @@ class DBProxy(Singleton):
         await self._update_hash()
         await self._update_rules(self.rules_url)
 
-    async def loop_check_and_update(self):
-        while True:
-            if await self._should_update():
-                await self._update_db()
-            await asyncio.sleep(DAY)
-
     def _simplify(self, string):
         return re.sub(r'[\W\s]', '', string).lower()
 
     def _make_remote_image_url(self, cardname):
         return re.sub(self.url_repl_str, urllib.parse.quote(cardname), 
                       self.cards_url)
+
+    async def loop_check_and_update(self):
+        while True:
+            if await self._should_update():
+                await self._update_db()
+            await asyncio.sleep(DAY)
