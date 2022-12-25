@@ -1,8 +1,8 @@
 import os
 import editdistance as edist
-from Singleton import Singleton
-from Deck import Deck
-from Rules import Rules
+from src.Singleton import Singleton
+from src.DatabaseObjs.Deck import Deck
+from src.DatabaseObjs.Rules import Rules
 
 RAW = "rawtext"
 

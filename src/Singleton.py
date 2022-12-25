@@ -10,7 +10,7 @@ class Singleton(object):
         We only want one of each object for the whole code, so we'll force it
         as a singleton
     """
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Singleton, cls).__new__(cls)
         return cls.instance

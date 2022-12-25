@@ -2,7 +2,7 @@ import re
 import xml.etree.ElementTree as ET
 import json
 from collections import namedtuple
-from Card import Card
+from src.DatabaseObjs.Card import Card
 
 ZIP = "zip"
 COD = "cod"
