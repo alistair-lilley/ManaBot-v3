@@ -10,15 +10,6 @@ POWER = "power"
 TOUGHNESS = "toughness"
 LEGALITIES = "legalities"
 
-"""
-MANACOST = "convertedManaCost"
-COLORS = "colors"
-COLORID = "colorIdentity"
-PT = "pt"
-TEXT = "text"
-TYPE = "type"
-LEGALITIES = "legalities"
-"""
 
 class Card:
     '''

@@ -13,8 +13,7 @@ class Database(Singleton, Deck, Rules):
         deck_file = '\n'.join([f'0 {card[:-4]}' for card in 
                                os.listdir(data_dir + json_path)])
         super(Singleton, self).__init__()
-        super(Deck, self).__init__(deck_file, RAW, data_dir, 
-                                   info_sections)
+        super(Deck, self).__init__(deck_file, RAW, data_dir, info_sections)
         super(Rules, self).__init__(rules_file)
         self.sorted_cards = sorted(self.mainboard.keys())
     
@@ -31,6 +30,9 @@ class Database(Singleton, Deck, Rules):
             return self.mainboard[cardname]
         closest_card, similars = self._card_edist(cardname)
         return self.mainboard[closest_card], similars
+    
+    def search_for_rule(self, rulename):
+        return self.retrieve_rule(rulename)
     
 
 class MinHeap:

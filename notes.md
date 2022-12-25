@@ -9,7 +9,6 @@
 [] DCProxy - IP
 [] TGProxy - IP
 [] ServerProxy - IP
-[] RequestFormatter
 [x] Singleton
 [] Startup
 

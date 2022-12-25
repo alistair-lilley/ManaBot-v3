@@ -72,10 +72,6 @@ class DBProxy(Singleton):
         with open(self.local_hash, 'w') as update_hash:
             online_hash = await self.http_session.get(self.remote_update_hash)
             update_hash.write(await online_hash.text())
-    
-    def _clear_hash(self):
-        with open(self.local_hash, 'w') as update_hash:
-            update_hash.write('')
         
     async def _fetch_database(self):
         try:
@@ -191,7 +187,7 @@ class DBProxy(Singleton):
         current_rules_url = await self._find_rules_url()
         rules_online = await self.http_session.get(current_rules_url)
         rules_text = await rules_online.text()
-        with open(self.database_dir + "/rules", 'w') as rulesfile:
+        with open(os.path.join(self.database_dir, "rules.txt"), 'w') as rulesfile:
             rulesfile.write(rules_text)
 
     async def _update_db(self):
@@ -213,11 +209,15 @@ class DBProxy(Singleton):
     def _make_remote_image_url(self, cardname):
         return re.sub(self.url_repl_str, urllib.parse.quote(cardname), 
                       self.cards_url)
+    
+    def clear_hash(self):
+        with open(self.local_hash, 'w') as update_hash:
+            update_hash.write('')
 
-    async def loop_check_and_update(self):
-        if self.clear_hash:
-            self._clear_hash()
-        while True:
-            if await self._should_update():
-                await self._update_db()
-            await asyncio.sleep(DAY)
+    async def check_update_db(self):
+        if await self._should_update():
+            await self._update_db()
+    
+    @property
+    def clear_hash(self):
+        return self.clear_hash
