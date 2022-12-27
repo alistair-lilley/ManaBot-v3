@@ -3,3 +3,4 @@
 **/*pycache*/**
 data/
 notest.md
+.env

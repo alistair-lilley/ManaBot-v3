@@ -89,5 +89,11 @@ class Card:
         return self._get_image_bytes()
         
     @property
-    def all_info(self):
-        return self.cardinfo, self.image_path
+    def information(self):
+        return self.cardinfo
+    
+    @property
+    def info_pretty(self):
+        text = '\n'.join([f"**{section}**: {self.information[section]}" 
+                          for section in self.information])
+        return text

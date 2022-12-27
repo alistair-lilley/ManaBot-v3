@@ -7,9 +7,9 @@ from src.Constants import CARD_INFO_SECTIONS
 
 MINUTE = 60
 
-class ManaBot(Singleton, TGProxy, DCProxy):
+class ManaBot(Singleton):
     
-    def __init__(self, tgbot, dcbot):
+    def __init__(self):
         # create tgproxy, dcproxy, database (none), and startup objects
         pass
     

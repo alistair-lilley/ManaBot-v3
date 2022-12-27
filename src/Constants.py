@@ -11,6 +11,9 @@ CARD_STR_REPL = "%CARD%"
 CARD_ID_TYPE = "name"
 CARD_SIZE = (360, 500)
 
+DATABASE_NOT_LOADED = "The database has not been loaded yet. "\
+    "Please try again in a few minutes."
+
 MSGMAX = 2000
 
 COMMANDS = [
