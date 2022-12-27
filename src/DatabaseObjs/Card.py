@@ -1,6 +1,7 @@
 import re, io, json, os
 from collections import namedtuple
 from PIL import Image
+from io import BytesIO
 
 
 Section = namedtuple("Section", "name default")
@@ -24,10 +25,7 @@ class Card:
         with open(card_json_path) as read_card:
             card_json = json.load(read_card)
         self.cardinfo = self._extract(card_json, card_info_sections)
-        self.image = os.path.join(card_image_dir, card_json_path)
-        #self.image = io.BytesIO()
-        #image = Image.open(card_image_dir)
-        #image.save(self.image, 'JPEG')
+        self.image_path = os.path.join(card_image_dir, card_json_path)
 
     def __lt__(self, other_card):
         return self._comp_cards_alphabetically(other_card)
@@ -61,8 +59,11 @@ class Card:
                         cardinfo[section.name] = str(card_json[section.name])
         return cardinfo
     
-    def _get_image(self):
-        return self.image
+    def _get_image_bytes(self):
+        image = Image.open(self.image_path)
+        image_stream = image.tobytes()
+        image_bytesio = BytesIO(image_stream)
+        return image_bytesio
 
     def _simplify(self, string):
         return re.sub(r'[\_w\s]', '', string).lower()
@@ -84,9 +85,9 @@ class Card:
         return self.cardinfo[LEGALITIES]
     
     @property
-    def image(self):
-        return self._get_image()
+    def image_bytes(self):
+        return self._get_image_bytes()
         
     @property
     def all_info(self):
-        return self.cardinfo, self.image
+        return self.cardinfo, self.image_path

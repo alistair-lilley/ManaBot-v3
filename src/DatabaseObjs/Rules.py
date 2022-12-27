@@ -34,6 +34,16 @@ class Rules:
         return self.ruletree.search_for_rule(self._simplify(ruleorkw))
 
 
+class Rule:
+    
+    def __init__(self, rule_text):
+        self.text = rule_text
+    
+    @property
+    def text(self):
+        return self.text
+
+
 class RTree:
     '''
         RTree is a "rules tree". It is a tree structure for storing rules. It is
@@ -77,5 +87,5 @@ class RTree:
         if rulenum[0] in self.children:
             if len(rulenum) == 1:
                 return self.children[rulenum[0]]._get_rule()
-            return self.children[rulenum[0]].search_for_rule(rulenum[1:])
-        return "Rule not found"
+            return Rule(self.children[rulenum[0]].search_for_rule(rulenum[1:]))
+        return None

@@ -1,15 +1,23 @@
+import asyncio
+from src.Constants import MEDC
+from src.RemoteProxies.BaseProxy import BaseProxy
 
-class DCProxy:
+
+class DCProxy(BaseProxy):
     
-    def __init___(self, dcbot):
+    def __init___(self, dctoken, client):
         pass
     
-    def _send_response(self, formatted_results):
+    async def startup(self):
         pass
     
-    def _format_response(self, command, req_results):
+    async def _send_response(self, query, formatted_results):
+        # if req_results has photo
+        #   send photo
+        # if req_results has text
+        #   chunkify text
+        #   send text
         pass
     
-    async def send_results(self, command, req_results):
-        formatted = self._format_response(command, req_results)
-        await self._send_response(formatted)
+    async def _format_response(self, query, req_results):
+        return req_results

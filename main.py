@@ -1,28 +1,31 @@
 import discord
 from aiogram import Bot, Dispatcher, executor
 from aiogram.types import InlineQuery
+from dotenvn import load_dotenv, dotenv_values
 
 from src.ManaBot import ManaBot
 
-tgbot = Bot(token='BOT_TOKEN_HERE')
-dp = Dispatcher(tgbot)
+load_dotenv()
+
+config = dotenv_values(".env")
+
+tgtoken = config["TG_TOKEN"]
+dctoken = config["DC_TOKEN"]
 client = discord.Client()
 
-
-bot = ManaBot()
-
-@dp.inline_handler()
-async def on_tg_message(inline_query: InlineQuery):
-    await bot.run_command(*(inline_query.split(' ', 1)))
+bot = ManaBot(tgtoken, dctoken)
     
+@client.event
+async def on_ready():
+    pass
     
 @client.event
 async def on_dc_message(message):
-    if message.author == client.user:
-        return
-    
-    if message.content.startswith('!'):
-        await bot.run_command(*(message[1:].split(' ', 1)))
+    pass
+
+@dp.inline_handler()
+async def on_tg_message(inline_query: InlineQuery):
+    pass
 
 
 if __name__ == "__main__":

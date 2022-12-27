@@ -1,14 +1,14 @@
 # To-do and notes
 
 ## Pieces
-[] Card - EDITS NEEDED
+[x] Card
 [x] Deck
 [x] Rules
 [x] Database
 [x] DBProxy
 [] DCProxy - IP
 [] TGProxy - IP
-[] ServerProxy - IP
+[] ManaBot - IP
 [x] Singleton
 [] Startup
 

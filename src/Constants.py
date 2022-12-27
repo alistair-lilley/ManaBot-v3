@@ -11,6 +11,8 @@ CARD_STR_REPL = "%CARD%"
 CARD_ID_TYPE = "name"
 CARD_SIZE = (360, 500)
 
+MSGMAX = 2000
+
 COMMANDS = [
     "card",
     "rule"
