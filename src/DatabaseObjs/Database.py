@@ -3,6 +3,7 @@ import editdistance as edist
 from src.Singleton import Singleton
 from src.DatabaseObjs.Deck import Deck
 from src.DatabaseObjs.Rules import Rules
+from src.Constants import HEAP_MAX
 
 RAW = "rawtext"
 
@@ -11,7 +12,8 @@ class Database(Singleton, Deck, Rules):
     def __init__(self, json_path, data_dir, info_sections, 
                  rules_file):
         deck_file = '\n'.join([f'0 {card[:-4]}' for card in 
-                               os.listdir(data_dir + json_path)])
+                               os.listdir(data_dir + json_path)] 
+                               + ["backside"])
         super(Singleton, self).__init__()
         super(Deck, self).__init__(deck_file, RAW, data_dir, info_sections)
         super(Rules, self).__init__(rules_file)
@@ -22,14 +24,17 @@ class Database(Singleton, Deck, Rules):
         for card in self.sorted_cards:
             distance = edist.distance(card, cardname)
             topcards.insert((distance, card))
-        cards = topcards.serialize()
-        return card[0], cards[1:]
+        card = topcards.serialize()[0]
+        if cardname != card:
+            card = "backside"
+        return card
     
     def search_for_card(self, cardname):
         if cardname in self.mainboard.keys():
-            return self.mainboard[cardname]
-        closest_card, similars = self._card_edist(cardname)
-        return self.mainboard[closest_card], similars
+            return self.mainboard[cardname].cardobj
+        #closest_card, similars = self._card_edist(cardname)
+        closest_card = self._card_edist(cardname)
+        return self.mainboard[closest_card].cardobj #, similars
     
     def search_for_rule(self, rulename):
         return self.retrieve_rule(rulename)
@@ -40,7 +45,7 @@ class MinHeap:
     def __init__(self):
         self.heap = []
         self.size = 0
-        self.max = 6
+        self.max = HEAP_MAX
     
     def _left(self, idx):
         return idx*2
@@ -51,7 +56,7 @@ class MinHeap:
     def insert_val(self, val):
         self.heap.append(val)
         self._heapify(0)
-        if self.size == self.max:
+        if self.size > self.max:
             self.heap = self.heap[:-1]
             return
         self.size += 1

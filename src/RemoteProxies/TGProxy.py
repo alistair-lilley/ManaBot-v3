@@ -9,8 +9,9 @@ from src.RemoteProxies.BaseProxy import BaseProxy
 
 class TGProxy(BaseProxy):
     
-    def __init___(self):
-        pass
+    def __init___(self, token):
+        self.token = token
+        self.bot = None
     
     async def startup(self):
         pass

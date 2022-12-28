@@ -11,10 +11,13 @@ CARD_STR_REPL = "%CARD%"
 CARD_ID_TYPE = "name"
 CARD_SIZE = (360, 500)
 
+JSON_PATH = "json"
+
 DATABASE_NOT_LOADED = "The database has not been loaded yet. "\
     "Please try again in a few minutes."
 
 MSGMAX = 2000
+HEAP_MAX = 1
 
 COMMANDS = [
     "card",

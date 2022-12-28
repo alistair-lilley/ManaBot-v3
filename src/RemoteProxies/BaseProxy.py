@@ -6,8 +6,8 @@ from src.Constants import MSGMAX, DATABASE_NOT_LOADED
 
 class BaseProxy(metaclass=ABCMeta):
     
-    def __init__(self, bot_token):
-        self.token = bot_token
+    def __init__(self):
+        pass
     
     @abstractmethod
     async def startup(self):
@@ -37,7 +37,7 @@ class BaseProxy(metaclass=ABCMeta):
     
     async def _extract_data(self, req_results):
         if not req_results:
-            return DATABASE_NOT_LOADED
+            return {"text": DATABASE_NOT_LOADED}
         if isinstance(req_results, Card):
             return self._extract_card(req_results)
         elif isinstance(req_results, Rule):

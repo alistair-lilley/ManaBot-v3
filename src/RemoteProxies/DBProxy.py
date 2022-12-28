@@ -90,11 +90,13 @@ class DBProxy(Singleton):
         return json_cards_split_up
 
     def _save_database(self, json_files):
-        # Sanity check: make sure there's a database directory
         for card in json_files:
             with open(f'{self.database_dir}/{JSON_PATH}/'
                       f'{self._simplify(card[NAME])}.json', 'w') as json_card_f:
                 json.dump(card, json_card_f)
+        with open(f'{self.database_dir}/{JSON_PATH}/'
+                  f'backside.json', 'w') as json_card_f:
+            json.dump({}, json_card_f)
 
     def _compress_save_card_image(self, cardpath, ext):
         with Image.open(cardpath + '.' + ext) as cardfile:
@@ -107,6 +109,23 @@ class DBProxy(Singleton):
                 compressed_card.paste(resized_card)
             compressed_card.save(cardpath + ".jpg")
             os.remove(cardpath + '.' + ext)
+
+    async def _download_backside(self):
+        try:
+            backside_url = "https://static.wikia.nocookie.net/" \
+                "mtgsalvation_gamepedia/images/f/f8/" \
+                "Magic_card_back.jpg/revision/latest/scale-to-width-down" \
+                "/250?cb=20140813141013"
+            card_online = await self.http_session.get(backside_url)
+            card_data = await card_online.read()
+            cardpath = self.database_dir + "/" + IMAGE_PATH + "/"  \
+                            + "backside"
+            ext = filetype.guess(card_data).extension
+            with open(cardpath + '.' + ext, 'wb') as card_write:
+                card_write.write(card_data)
+            self._compress_save_card_image(cardpath, ext)
+        except:
+            print("Failed to download card -- remote server down?", end='\r')
 
     async def _download_one_card_image(self, cardname, cardID):
         try:

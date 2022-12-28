@@ -4,3 +4,4 @@
 data/
 notest.md
 .env
+.venv
