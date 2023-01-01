@@ -1,22 +1,24 @@
-import re, string
+import re, string, os
+from src.Constants import RULES_FILE, DATA_DIR
 
 class Rules:
     
-    def __init__(self, rules_file):
-        self.ruletree = self._make_rules_tree(rules_file)
+    def __init__(self):
+        self.rules_file = RULES_FILE
+        self.ruletree = self._make_rules_tree()
     
-    def _make_rules_tree(self, rules_file):
+    def _make_rules_tree(self):
         rulees_tree = RTree("root","")
-        rule_lines = self._read_in_rules(rules_file)
+        rule_lines = self._read_in_rules()
         for rule in rule_lines:
             rulenum = rule.split(' ', 1)[0]
             rulees_tree.insert_rule(self._simplify(rulenum), rule)
         return rulees_tree
 
-    def _read_in_rules(self, rules_file):
+    def _read_in_rules(self):
         parsed_lines = []
         curr_rule = ""
-        rflines = [line for line in open(rules_file)]
+        rflines = [line for line in open(os.path.join(DATA_DIR, RULES_FILE))]
         for line in rflines:
             if not line.strip():
                 if curr_rule:

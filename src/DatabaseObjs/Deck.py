@@ -1,23 +1,9 @@
-import re
+import re, os, json
 import xml.etree.ElementTree as ET
-import json
 from collections import namedtuple
 from src.DatabaseObjs.Card import Card
-
-ZIP = "zip"
-COD = "cod"
-MWDECK = "mwDeck"
-TXT = "txt"
-RAW = "rawtext"
-JSON = "JSON"
-IMAGEPATH = "cardimages/"
-JSONPATH = "jsoncards/"
-SAVEPATH = "textfiles/"
-NAME = 'name'
-NUMBER = 'number'
-BANNED = 'banned'
-RESTRICTED = 'restricted'
-LEGAL = 'legal'
+from src.Constants import JSON_PATH, IMAGE_PATH, SAVE_PATH, RAW, MWDECK, TXT, \
+    COD, NAME, NUMBER, BANNED, RESTRICTED, LEGAL, DATA_DIR, CARD_INFO_SECTIONS
 
 CardPair = namedtuple("CardPair", "num cardobj")
 
@@ -25,26 +11,24 @@ class Deck:
     '''
         A deck is a collection of cards (implemented as Card objects).
     '''
-    def __init__(self, deck_file, file_type, data_dir, info_sections): #, text_dir):
+    def __init__(self, deck_file, file_type): #, text_dir):
         #self.textdir = text_dir
-        self.datadir = data_dir
         self.name = deck_file
-        self.jsonpaths = data_dir + JSONPATH
-        self.imagepaths = data_dir + IMAGEPATH
-        self.savedir = data_dir + SAVEPATH
-        self.info_sections = info_sections
-        formats = open('testdata/formats.txt')
-        self.default_legality_formats = {line.strip().split(',')[0] : 
-                                         line.strip().split(',')[1]
-                                         for line in formats}
-        formats.close()
+        self.jsonpaths = os.path.join(DATA_DIR, JSON_PATH)
+        self.imagepaths = os.path.join(DATA_DIR, IMAGE_PATH)
+        self.savedir = os.path.join(DATA_DIR, SAVE_PATH)
+        self.info_sections = CARD_INFO_SECTIONS
         self.comments, self.mainboard, self.sideboard \
             = self._parse_deck(deck_file, file_type)
+        #formats = open('testdata/formats.txt')
+        #self.default_legality_formats = {line.strip().split(',')[0] : 
+        #                                 line.strip().split(',')[1]
+        #                                 for line in formats}
+        #formats.close()
 
     def _make_card(self, card):
         card = self._simplify(card)
-        return Card(self.jsonpaths + card + '.json', 
-                    self.imagepaths + card + '.jpg', self.info_sections)
+        return Card(os.path.join(card))
 
     def _parse_deck(self, deck_file, file_type):
         if file_type == RAW:
@@ -53,7 +37,7 @@ class Deck:
         else:
             card_list = self._from_file(deck_file, file_type)
             comments, mainboard, sideboard = card_list
-        return comments, mainboard, sideboard
+        return (comments, mainboard, sideboard)
 
     def _from_file(self, deck_file, file_type):
         with open(self.datadir + "testdecks/" + deck_file + '.' + file_type) \
@@ -184,10 +168,10 @@ class Deck:
                                set_legalities)
 
     def _simplify(self, string):
-        return re.sub(r'[\_w\s]', '', string).lower()
+        return re.sub(r'[\W\s]', '', string).lower()
 
     # Pulls the number and the card from a line in a txt or mwDeck file line
-    def _pull_num_card(self, line, numsplit):
+    def _pull_num_card(self, line, numsplit=1):
         card_line_split = line.split(' ', numsplit)
         num = card_line_split[0]
         card = self._simplify(card_line_split[-1])
@@ -203,15 +187,3 @@ class Deck:
         with open(self.savedir + self.name, 'w') as save_deck_file:
             decktext = self._to_text()
             save_deck_file.write(decktext)
-            
-    @property
-    def mainboard(self):
-        return self.mainboard
-    
-    @property
-    def sideboard(self):
-        return self.sideboard
-    
-    @property
-    def comments(self):
-        return self.comments
