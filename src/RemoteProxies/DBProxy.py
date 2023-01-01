@@ -1,4 +1,4 @@
-import aiohttp, re, urllib, os, asyncio
+import aiohttp, os, asyncio
 from src.Singleton import Singleton
 from src.RemoteProxies.CardProxy import CardProxy
 from src.RemoteProxies.RuleProxy import RuleProxy
@@ -38,7 +38,7 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
 
     async def _should_update(self):
         if not os.path.exists(LOCAL_HASH):
-            with open(LOCAL_HASH, 'w') as newhash:
+            with open(os.path.join(DATA_DIR, LOCAL_HASH), 'w') as newhash:
                 newhash.write('')
                 print("Hash file made")
         while True:
