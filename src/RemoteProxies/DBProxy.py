@@ -35,6 +35,7 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
             os.mkdir(os.path.join(DATA_DIR, JSON_PATH))
         if not os.path.exists(os.path.join(DATA_DIR, IMAGE_PATH)):
             os.mkdir(os.path.join(DATA_DIR, IMAGE_PATH))
+
     async def _should_update(self):
         if not os.path.exists(LOCAL_HASH):
             with open(LOCAL_HASH, 'w') as newhash:
@@ -45,18 +46,19 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
                 with open(os.path.join(DATA_DIR, LOCAL_HASH)) as update_hash:
                     online_hash = \
                             await self.http_session.get(self.remote_update_hash)
-                    downloaded_hash = await online_hash.text()
-                    local_hash = update_hash.read() 
-                    if local_hash == downloaded_hash:
-                        print("Hash found -- database up to date.")
-                        return False    
-                    else:
-                        print("New hash found -- updating database.")
-                        return True
+                    break
             except:
                 print(f"Remote update hash not reached: "
                       f"{self.remote_update_hash}\nTrying again in 10 seconds")
                 await asyncio.sleep(10)
+        downloaded_hash = await online_hash.text()
+        local_hash = update_hash.read() 
+        if local_hash == downloaded_hash:
+            print("Hash found -- database up to date.")
+            return False    
+        else:
+            print("New hash found -- updating database.")
+            return True
 
     async def _update_db(self):
         #json_cards = self._split_up_json_cards(await self._fetch_database())
