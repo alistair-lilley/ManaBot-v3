@@ -25,14 +25,18 @@ class Card:
         self.cardinfo = self._extract(card_json)
         self.path = os.path.join(DATA_DIR, IMAGE_PATH, card_name + ".jpg")
 
+
     def __lt__(self, other_card):
         return self._comp_cards_alphabetically(other_card)
+
 
     def __gt__(self, other_card):
         return not self._comp_cards_alphabetically(other_card)
 
+
     def __eq__(self, other_card):
         return self.cardinfo[NAME] == other_card.get_name()
+
 
     def _comp_cards_alphabetically(self, other_card):
         thisname = self.cardinfo[NAME]
@@ -43,6 +47,7 @@ class Card:
             elif this_char > other_char:
                 return False
         return len(thisname) < len(other_card_name)
+
 
     def _extract(self, card_json):
         cardinfo = dict()
@@ -57,8 +62,10 @@ class Card:
                         cardinfo[section] = str(card_json[section])
         return cardinfo
     
+    
     def _simplify(self, string):
         return re.sub(r'[\W\s]', '', string).lower()
+
 
     @property
     def name(self):

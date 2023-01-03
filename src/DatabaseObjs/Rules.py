@@ -7,6 +7,7 @@ class Rules:
         self.rules_file = RULES_FILE
         self.ruletree = self._make_rules_tree()
     
+    
     def _make_rules_tree(self):
         rulees_tree = RTree("root","")
         rule_lines = self._read_in_rules()
@@ -14,6 +15,7 @@ class Rules:
             rulenum = rule.split(' ', 1)[0]
             rulees_tree.insert_rule(self._simplify(rulenum), rule)
         return rulees_tree
+
 
     def _read_in_rules(self):
         parsed_lines = []
@@ -28,9 +30,11 @@ class Rules:
                 curr_rule += line + " "
         return parsed_lines
 
+
     def _simplify(self, rulenum):
         rulenum = re.sub(r'[\W\s]', '', rulenum).lower()
         return ''.join([ch for ch in rulenum if ch not in string.punctuation])
+
 
     def retrieve_rule(self, ruleorkw):
         return self.ruletree.search_for_rule(self._simplify(ruleorkw))
@@ -39,11 +43,11 @@ class Rules:
 class Rule:
     
     def __init__(self, rule_text):
-        self.text = rule_text
+        self.rule_text = rule_text
     
     @property
     def text(self):
-        return self.text
+        return self.rule_text
 
 
 class RTree:
@@ -61,8 +65,10 @@ class RTree:
         self.value = rule
         self.children = dict()
 
+
     def _get_rule(self):
         return self.value + self._get_next_level()
+
 
     def _get_next_level(self):
         children_values = ""
@@ -70,8 +76,9 @@ class RTree:
             if not self.children[child].value:
                 children_values += self.children[child].get_next_level()
             else:
-                children_values += '\n' + self.children[child].value
+                children_values += self.children[child].value
         return children_values
+
 
     def insert_rule(self, rulenum, rule):
         if not rulenum:
@@ -85,9 +92,10 @@ class RTree:
                 self.children[rulenum[0]] = RTree(rulenum[0], "")
                 self.children[rulenum[0]].insert_rule(rulenum[1:], rule)
 
+
     def search_for_rule(self, rulenum):
         if rulenum[0] in self.children:
             if len(rulenum) == 1:
-                return self.children[rulenum[0]]._get_rule()
-            return Rule(self.children[rulenum[0]].search_for_rule(rulenum[1:]))
+                return Rule(self.children[rulenum[0]]._get_rule())
+            return self.children[rulenum[0]].search_for_rule(rulenum[1:])
         return None

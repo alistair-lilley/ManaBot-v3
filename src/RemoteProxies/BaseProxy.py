@@ -17,6 +17,7 @@ class BaseProxy(metaclass=ABCMeta):
     async def _format_response(self, req_results):
         pass
     
+    
     def _extract_card(self, req_results):
         text = req_results.info_pretty
         image_bytes = req_results.image_bytes
@@ -24,14 +25,17 @@ class BaseProxy(metaclass=ABCMeta):
         return {"text": text, "image_bytes": image_bytes, 
                 "image_path": image_path}
 
+
     def _extract_rule(self, req_results):
         return {"text": req_results.text}
+
 
     # Chunkify for DC cuz it cant handle text blocks more than 2000 characters
     def _chunkify_text(self, text):
         chunkified = [text[i:i+MSGMAX] 
                       for i in range(0, len(text), MSGMAX)]
         return chunkified
+    
     
     def _extract_data(self, req_results):
         if not req_results:
@@ -40,6 +44,7 @@ class BaseProxy(metaclass=ABCMeta):
             return self._extract_card(req_results)
         elif isinstance(req_results, Rule):
             return self._extract_rule(req_results)
+    
     
     async def send_results(self, query, req_results):
         result_data = self._extract_data(req_results)

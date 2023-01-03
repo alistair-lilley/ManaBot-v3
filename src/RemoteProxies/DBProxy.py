@@ -1,4 +1,4 @@
-import aiohttp, os, asyncio
+import aiohttp, os, asyncio, json
 from src.Singleton import Singleton
 from src.RemoteProxies.CardProxy import CardProxy
 from src.RemoteProxies.RuleProxy import RuleProxy
@@ -13,20 +13,6 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
         from the Rules database. It updates the local database files.
     '''
     def __init__(self):
-        self.http_session = None
-        while not self.http_session:
-            try:
-                self.http_session = aiohttp.ClientSession(
-                    connector=aiohttp.TCPConnector(verify_ssl=False))
-                print("http session online")
-            except: 
-                print("http session failed to connect... Reconnecting in",
-                        end="")
-                countdown = 10
-                while countdown:
-                    print(countdown, end='\r')
-                    print("")
-                    countdown -= 1
         self.local_hash = os.path.join(DATA_DIR, LOCAL_HASH)
         self.remote_update_hash = JSON_URL + '.sha256'
         if not os.path.exists(DATA_DIR):
@@ -35,17 +21,38 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
             os.mkdir(os.path.join(DATA_DIR, JSON_PATH))
         if not os.path.exists(os.path.join(DATA_DIR, IMAGE_PATH)):
             os.mkdir(os.path.join(DATA_DIR, IMAGE_PATH))
+        self.no_json_update = False
+
+
+    async def check_update_db(self, database, no_update,
+                              clear_hash, clear_images, no_json_update):
+        self.no_json_update = no_json_update
+        if clear_hash:
+            self._clear_hash()
+        if clear_images:
+            self._clear_images()
+        if no_update:
+            print("Skipping first update\n")
+            await asyncio.sleep(DAY)
+        while True:
+            if await self._should_update():
+                await self._update_db()
+            database.reload()
+            await asyncio.sleep(DAY)
+
 
     async def _should_update(self):
-        if not os.path.exists(LOCAL_HASH):
+        if not os.path.exists(os.path.join(DATA_DIR, LOCAL_HASH)):
             with open(os.path.join(DATA_DIR, LOCAL_HASH), 'w') as newhash:
                 newhash.write('')
                 print("Hash file made")
-        while True:
+        online_hash = None
+        while not online_hash:
             try:
-                online_hash = \
-                        await self.http_session.get(self.remote_update_hash)
-                break
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False)) as http_session:
+                    online_hash = \
+                            await http_session.get(self.remote_update_hash)
             except:
                 print(f"Remote update hash not reached: "
                       f"{self.remote_update_hash}\nTrying again in 10 seconds")
@@ -60,40 +67,48 @@ class DBProxy(Singleton, CardProxy, RuleProxy):
                 print("New hash found -- updating database.")
                 return True
 
+
     async def _update_db(self):
-        #json_cards = self._split_up_json_cards(await self._fetch_database())
-        #self._save_database(json_cards)
-        import json
-        json_cards = [json.load(open(os.path.join(DATA_DIR, JSON_PATH, card))) for card in os.listdir(os.path.join(DATA_DIR, JSON_PATH))]
+        if self.no_json_update:
+            print("Not clearing JSONs\n")
+            json_cards = [json.load(open(os.path.join(DATA_DIR, JSON_PATH,
+                                                      json_card)))
+                          for json_card in os.listdir(os.path.join(
+                              DATA_DIR, JSON_PATH))]
+            self.no_json_update = False
+        else:
+            json_cards = self._split_up_json_cards(await self._fetch_database())
+            self._save_database(json_cards)
         await self._download_card_images(json_cards)
         await self._update_rules()
         await self._update_hash()
-        print("Database fully updated")
+        print("Database fully updated\n")
+        
+        
+    async def _update_hash(self):
+        updated_hash = None
+        while not updated_hash:
+            try:
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False)) as http_session:
+                        updated_hash = (await http_session.get(
+                            self.remote_update_hash)).text()
+                print("Hash updated\n")
+            except:
+                print("Hash not reached")
+        with open(os.path.join(DATA_DIR, LOCAL_HASH), 'w') as update_hash:
+            update_hash.write(await updated_hash)
     
-    def clear_hash(self):
+    
+    def _clear_hash(self):
         print("Clearing hash")
         with open(self.local_hash, 'w') as update_hash:
             update_hash.write('')
-        print("Hash cleared")
+        print("Hash cleared\n")
 
-    def clear_images(self):
+
+    def _clear_images(self):
         print("Clearing images")
         for image_file in os.listdir(os.path.join(DATA_DIR, IMAGE_PATH)):
             os.remove(os.path.join(DATA_DIR, IMAGE_PATH, image_file))
-        print("Images cleared")
-
-    async def check_update_db(self, database, no_update,
-                              clear_hash, clear_images):
-        if clear_hash:
-            self.clear_hash()
-        if clear_images:
-            self.clear_images()
-        if no_update:
-            print("Skipping first update")
-            await asyncio.sleep(DAY)
-        while True:
-            if await self._should_update():
-                await self._update_db()
-                database.reload()
-                print("Database reloaded")
-            await asyncio.sleep(DAY)
+        print("Images cleared\n")

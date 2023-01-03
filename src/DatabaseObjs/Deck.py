@@ -26,9 +26,11 @@ class Deck:
         #                                 for line in formats}
         #formats.close()
 
+
     def _make_card(self, card):
         card = self._simplify(card)
         return Card(os.path.join(card))
+
 
     def _parse_deck(self, deck_file, file_type):
         if file_type == RAW:
@@ -38,6 +40,7 @@ class Deck:
             card_list = self._from_file(deck_file, file_type)
             comments, mainboard, sideboard = card_list
         return (comments, mainboard, sideboard)
+
 
     def _from_file(self, deck_file, file_type):
         with open(self.datadir + "testdecks/" + deck_file + '.' + file_type) \
@@ -49,6 +52,7 @@ class Deck:
             return self._from_mw_deck_txt(deck_data, file_type)
         else:
             return deck_data
+
 
     # cod file is basically an xml file, so we parse it like an XML tree
     # deck_data is passed in as a string of the XML (cod) file
@@ -67,6 +71,7 @@ class Deck:
                 sideboard = self._get_board_cod(zone)
         return comments, mainboard, sideboard
 
+
     def _get_board_cod(self, zone):
         board = {}
         for card in zone:
@@ -74,6 +79,7 @@ class Deck:
                 board[card.attrib[NAME]] = CardPair(card.attrib[NUMBER], 
                 self._make_card(card.attrib[NAME]))
         return board
+
 
     # This is both for txt and mwDeck, because the only difference is the number
     # of times you split the line mwDeck is in the format `1 [ZEN] Marsh Flats`,
@@ -104,8 +110,10 @@ class Deck:
                 sideboard[card] = CardPair(num, self._make_card(card))
         return comments, mainboard, sideboard
 
+
     def _from_raw(self, deck_raw):
         return self._from_mw_deck_txt(deck_raw, TXT)
+
 
     def _to_text(self):
         deck_text = ''
@@ -121,6 +129,7 @@ class Deck:
                          for card in self.sideboard]
             deck_text += '\n' + '\n'.join(sideboard)
         return deck_text
+
 
     def _to_ban_txt(self, bannedsets, restrictedsets, set_legalities): #, legalsets
         out = "**Banned cards**"
@@ -142,6 +151,7 @@ class Deck:
         #    for card in legalsets[legset]:
         #        out += '\n' + card
         return out
+
 
     def _get_bans_from_legalities(self, set_legalities):
         banned_cards = {}
@@ -166,10 +176,8 @@ class Deck:
                         + [cardobj.get_name()]
         bans = self._to_ban_text(banned_cards, restricted_cards, legal_cards,
                                set_legalities)
-
-    def _simplify(self, string):
-        return re.sub(r'[\W\s]', '', string).lower()
-
+        
+        
     # Pulls the number and the card from a line in a txt or mwDeck file line
     def _pull_num_card(self, line, numsplit=1):
         card_line_split = line.split(' ', numsplit)
@@ -178,12 +186,19 @@ class Deck:
         return num, card
         #return bans
 
+
     def get_bans(self, legalities=None):
         if not legalities:
             legalities = self.default_legality_formats
         return self._get_bans_from_legalities(legalities)
         
+        
     def to_txt_file(self):
         with open(self.savedir + self.name, 'w') as save_deck_file:
             decktext = self._to_text()
             save_deck_file.write(decktext)
+
+
+    def _simplify(self, string):
+        return re.sub(r'[\W\s]', '', string).lower()
+

@@ -4,8 +4,7 @@
 
 # URLs
 JSON_URL = "https://mtgjson.com/api/v5/AllPrintings.json"
-CARD_IMAGE_URL = "https://gatherer.wizards.com/" \
-                "Handlers/Image.ashx?name=%CARD%&type=card"
+CARD_IMAGE_URL = "https://api.scryfall.com/cards/%scryfallId%?format=image"
 BACKSIDE_URL = "https://static.wikia.nocookie.net/" \
                 "mtgsalvation_gamepedia/images/f/f8/" \
                 "Magic_card_back.jpg/revision/latest/scale-to-width-down" \
@@ -66,9 +65,14 @@ CARD_SIZE = (360, 500)
 MINUTE = 60
 HOUR = MINUTE*60
 DAY = HOUR*24
+CARD_CHUNK = 100
+RATE_LIMIT = 1/10
 
 # Misc?
-CARD_STR_REPL = "%CARD%"
-CARD_ID_TYPE = "name"
+CARD_DOWNLOAD_ERROR = "CARD FAILED TO DOWNLOAD"
+EMPTY = ""
+IDENTIFIERS = "identifiers"
+CARD_STR_REPL = "%scryfallId%"
+CARD_ID_TYPE = "scryfallId"
 DATABASE_NOT_LOADED = "The database has not been loaded yet. "\
     "Please try again in a few minutes."

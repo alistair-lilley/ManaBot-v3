@@ -11,6 +11,7 @@ class TGProxy(BaseProxy):
         self.bot = tgbot
         self.me = my_id
     
+    
     async def startup(self, dp):
         dt = datetime.now().strftime("%d-%m-%Y %H:%M")
         upmsg = f"Bot has started: {dt}"
@@ -18,9 +19,11 @@ class TGProxy(BaseProxy):
         await dp.skip_updates()
         asyncio.ensure_future(dp.start_polling())
     
+    
     async def _send_response(self, query, formatted_results):
         await self.bot.answer_inline_query(query.id, results=formatted_results,
                                      cache_time=1)
+    
     
     async def _upload_image_get_id(self, image_bytes):
         image_file = InputFile(image_bytes)
@@ -28,6 +31,7 @@ class TGProxy(BaseProxy):
         await self.bot.delete_message(self.me, pic.message_id)
         photoid = pic.photo[0].file_id
         return photoid
+    
     
     async def _format_response(self, query, req_results):
         article_hash = hashlib.md5(query.id.encode()).hexdigest()

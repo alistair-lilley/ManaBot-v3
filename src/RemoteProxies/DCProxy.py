@@ -8,6 +8,7 @@ class DCProxy(BaseProxy):
     def __init__(self, my_id):
         self.me = my_id
     
+    
     async def startup(self, client, guild):
         for guild in client.guilds:
             if guild.name == guild:
@@ -28,6 +29,7 @@ class DCProxy(BaseProxy):
         if "text" in formatted_results:
             for chunk in formatted_results["text"]:
                 await query.channel.send(chunk)
+    
     
     async def _format_response(self, query_, req_results):
         formatted_results = {}
