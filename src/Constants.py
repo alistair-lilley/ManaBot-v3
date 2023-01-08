@@ -3,8 +3,7 @@
 '''
 
 # URLs
-#JSON_URL = "https://mtgjson.com/api/v5/AllPrintings.json"
-BULK_DATA_URL = "https://api.scryfall.com/bulk-data"
+JSON_URL = "https://mtgjson.com/api/v5/AllPrintings.json"
 CARD_IMAGE_URL = "https://api.scryfall.com/cards/%scryfallId%?format=image"
 BACKSIDE_URL = "https://static.wikia.nocookie.net/" \
                 "mtgsalvation_gamepedia/images/f/f8/" \
