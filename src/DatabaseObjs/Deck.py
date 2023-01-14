@@ -200,5 +200,5 @@ class Deck:
 
 
     def _simplify(self, string):
-        return re.sub(r'[\W\s]', '', string).lower()
+        return re.sub(r'[\W\s]', '', re.sub(r' ', '_', string)).lower()
 

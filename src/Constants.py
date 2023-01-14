@@ -3,15 +3,14 @@
 '''
 
 # URLs
-JSON_URL = "https://mtgjson.com/api/v5/AllPrintings.json"
-CARD_IMAGE_URL = "https://api.scryfall.com/cards/%scryfallId%?format=image"
+BULK_DATA_URL = "https://api.scryfall.com/bulk-data"
 BACKSIDE_URL = "https://static.wikia.nocookie.net/" \
                 "mtgsalvation_gamepedia/images/f/f8/" \
                 "Magic_card_back.jpg/revision/latest/scale-to-width-down" \
                 "/250?cb=20140813141013"
 RULES_URL = "https://media.wizards.com/" \
                 "%YR%/downloads/MagicCompRules%20%YR%%MO%%DAY%.txt"
-
+                
 # Paths
 DATA_DIR = "data"
 JSON_PATH = "json_cards"
@@ -25,13 +24,15 @@ NAME = "name"
 POWER = "power"
 TOUGHNESS = "toughness"
 LEGALITIES = "legalities"
-MANACOST = "convertedManaCost"
+MANACOST = "mana_cost"
 COLORS = "colors"
-COLORID = "colorIdentity"
+COLORID = "color_identity"
 PT = "pt"
-TEXT = "text"
-TYPE = "type"
-NUMBER = 'number'
+TEXT = "oracle_text"
+TYPE = "type_line"
+IMAGE_URIS = "image_uris"
+LARGE_IMAGE = "large"
+NUMBER = 'collector_number' # is thit right?
 BANNED = 'banned'
 RESTRICTED = 'restricted'
 LEGAL = 'legal'
@@ -47,8 +48,20 @@ CARD_INFO_SECTIONS = [
         COLORID,
         PT,
         TEXT,
-        TYPE
+        TYPE,
+        IMAGE_URIS
     ]
+
+PRETTY_SECTIONS = {
+    NAME: "Name",
+    POWER: "Power",
+    TOUGHNESS: "Toughness",
+    MANACOST: "Converted mana cost",
+    COLORS: "Colors",
+    COLORID: "Color ID",
+    TEXT: "Card text",
+    TYPE: "Card type"
+}
 
 # Deck data
 ZIP = "zip"

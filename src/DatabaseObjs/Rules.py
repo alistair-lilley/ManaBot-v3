@@ -32,7 +32,7 @@ class Rules:
 
 
     def _simplify(self, rulenum):
-        rulenum = re.sub(r'[\W\s]', '', rulenum).lower()
+        rulenum = re.sub(r'[\W\s]', '', re.sub(r' ', '_', rulenum)).lower()
         return ''.join([ch for ch in rulenum if ch not in string.punctuation])
 
 

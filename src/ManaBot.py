@@ -29,7 +29,7 @@ class ManaBot(Singleton):
         no_json_update = "no_json_update" in sys.argv
         asyncio.create_task(self.database_proxy.check_update_db(self.database,
                                                 no_update,
-                                                clear_hash, clear_images,
+                                                clear_hash, #clear_images,
                                                 no_json_update))
         telegram_start_args = [dp]
         dicsord_start_args = [client, guild]

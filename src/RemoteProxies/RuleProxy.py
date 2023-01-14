@@ -19,6 +19,7 @@ class RuleProxy:
             rulesfile.write(rules_text)
         print("Rules updated\n")
 
+
     async def _find_rules_url(self):
         year, month, day = [int(piece) for piece in 
                             datetime.datetime.now()\
@@ -37,11 +38,13 @@ class RuleProxy:
             if (year, month, day) == (1993, 1, 1):
                 raise("Checked all dates, rules look up failed...")
 
+
     def _complete_url(self, rules_url, year, month, day):
         rules_url = re.sub('%YR%', str(year), rules_url)
         rules_url = re.sub('%MO%', str(month), rules_url)
         rules_url = re.sub('%DAY%', str(day), rules_url)
         return rules_url
+    
     
     def _decrement_date(self, year, month, day):
         day -= 1
@@ -53,5 +56,6 @@ class RuleProxy:
             year -= 1
         return year, month, day
 
+
     def _simplify(self, string):
-        return re.sub(r'[\W\s]', '', string).lower()
+        return re.sub(r'[\W\s]', '', re.sub(r' ', '_', string)).lower()

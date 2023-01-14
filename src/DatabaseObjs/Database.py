@@ -27,8 +27,7 @@ class Database(Singleton, Deck, Rules):
     
     def reload(self):
         deck_file = '\n'.join(['0 '+ card.split('.')[0] for card in 
-                               os.listdir(os.path.join(DATA_DIR, JSON_PATH))] 
-                               + ["backside"])
+                               os.listdir(os.path.join(DATA_DIR, JSON_PATH))])
         self.comments, self.mainboard, self.sideboard \
             = self._parse_deck(deck_file, RAW)
         self.sorted_cards = sorted(self.mainboard.keys())
